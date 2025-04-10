@@ -7,7 +7,13 @@ from .models import User, Team, Activity, Leaderboard, Workout
 
 @api_view(['GET'])
 def api_root(request, format=None):
-    base_url = request.build_absolute_uri('/')
+    # Use the provided Codespace URL or build from request
+    if 'github.dev' in request.get_host():
+        base_url = 'https://urban-disco-r55rg4gw6vj2xvw5-8000.app.github.dev/'
+    else:
+        # Use the actual host and port from the request
+        base_url = request.build_absolute_uri('/')
+        
     return Response({
         'users': base_url + 'api/users/',
         'teams': base_url + 'api/teams/',

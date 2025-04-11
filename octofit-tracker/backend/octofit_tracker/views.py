@@ -7,19 +7,37 @@ from .models import User, Team, Activity, Leaderboard, Workout
 
 @api_view(['GET'])
 def api_root(request, format=None):
-    # Use the provided Codespace URL or build from request
-    if 'github.dev' in request.get_host():
-        base_url = 'https://urban-disco-r55rg4gw6vj2xvw5-8000.app.github.dev/'
+    # Verificar si estamos en GitHub Codespaces
+    codespace_name = None
+    forwarded_host = request.META.get('HTTP_X_FORWARDED_HOST')
+    github_codespace = request.META.get('HTTP_X_GITHUB_REQUEST')
+    
+    # Intentar detectar el nombre del Codespace desde las variables de entorno
+    import os
+    codespace_name = os.environ.get('CODESPACE_NAME')
+    
+    # Para depuración
+    print(f"Forwarded host: {forwarded_host}")
+    print(f"GitHub request: {github_codespace}")
+    print(f"CODESPACE_NAME: {codespace_name}")
+    print(f"Host detectado: {request.get_host()}")
+    
+    # Determinar la URL base basada en el entorno
+    if codespace_name:
+        # Estamos en GitHub Codespaces
+        base_url = f"https://{codespace_name}-8000.app.github.dev"
     else:
-        # Use the actual host and port from the request
-        base_url = request.build_absolute_uri('/')
-        
+        # Entorno local u otro
+        base_url = request.build_absolute_uri('/').rstrip('/')
+    
+    print(f"URL base: {base_url}")
+    
     return Response({
-        'users': base_url + 'api/users/',
-        'teams': base_url + 'api/teams/',
-        'activities': base_url + 'api/activities/',
-        'leaderboard': base_url + 'api/leaderboard/',
-        'workouts': base_url + 'api/workouts/'
+        'users': f"{base_url}/api/users/",
+        'teams': f"{base_url}/api/teams/",
+        'activities': f"{base_url}/api/activities/",
+        'leaderboard': f"{base_url}/api/leaderboard/",
+        'workouts': f"{base_url}/api/workouts/"
     })
 
 class UserViewSet(viewsets.ModelViewSet):

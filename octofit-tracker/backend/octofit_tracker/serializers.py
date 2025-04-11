@@ -29,19 +29,34 @@ class TeamSerializer(serializers.ModelSerializer):
 
 class ActivitySerializer(serializers.ModelSerializer):
     _id = ObjectIdField()
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-
+    user_id = ObjectIdField(source='user._id')
+    
     class Meta:
         model = Activity
         fields = '__all__'
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Convert any remaining ObjectId fields to strings
+        for field in representation:
+            if isinstance(representation[field], ObjectId):
+                representation[field] = str(representation[field])
+        return representation
 
 class LeaderboardSerializer(serializers.ModelSerializer):
     _id = ObjectIdField()
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user_id = ObjectIdField(source='user._id')
 
     class Meta:
         model = Leaderboard
         fields = '__all__'
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        for field in representation:
+            if isinstance(representation[field], ObjectId):
+                representation[field] = str(representation[field])
+        return representation
 
 class WorkoutSerializer(serializers.ModelSerializer):
     _id = ObjectIdField()
@@ -49,3 +64,10 @@ class WorkoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workout
         fields = '__all__'
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        for field in representation:
+            if isinstance(representation[field], ObjectId):
+                representation[field] = str(representation[field])
+        return representation
